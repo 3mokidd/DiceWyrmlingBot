@@ -6,10 +6,12 @@ from random import *
 TOKEN = None
 with open("token","r") as token_file:
     TOKEN = token_file.read()
-print(TOKEN)
+# print(TOKEN)
+
 
 async def start(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text("Hello, human. Would you like to roll one of my dice? Type /roll XdX to roll the dice. Like this: /roll 2d6")
+    
 
 async def roll_d20(update: Update, context: CallbackContext) -> None:
     d20_result = randint(1, 20)
@@ -24,6 +26,7 @@ async def roll_d20(update: Update, context: CallbackContext) -> None:
 #   roll_result = randint(1, n) + m
 #   await update.message.reply_text(f"Lets roll a {n}-sided die and add {m} to the result... You rolled a {roll_result}!")
 
+
 async def any_dice(update: Update, context: CallbackContext) -> None:
     args = context.args
 
@@ -31,33 +34,62 @@ async def any_dice(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text("I have a lot of dice! How am i supposed to know which one to give you? Write /roll <number>d<number>, like this: /roll 3d12.")
 
     dice_command = args[0].lower()
-    locate_d = dice_command.find('d')
-    try: 
-        dice_sides = int(dice_command[locate_d+1:])
-        dice_quant = int(dice_command[:locate_d])
+    dice_command = dice_command.replace('-', '+-')
+
+    roll_list = dice_command.split('+')
+    roll = 0
     
-        if dice_sides > 100 or dice_sides <= 1:
-            await update.message.reply_text("I'm not sure if i have this die. You can choose any-sided die, but the number should be more than 1 and less than 100!")
-            return 
-        if dice_quant > 100:
-            await update.message.reply_text("I dont have this many dice! Even if i did, i wouldn't give you that much. The max is 100!")
-            return
-        if dice_quant < 1:
-            await update.message.reply_text("Are you serious? How am i supposed to roll that? The minimum amount of dice is 1!")
-            return
+    print(roll_list)
 
-        total = 0
+    for i, block in enumerate(roll_list):
+        if block.find('d') != -1:
+            
+            flag = True 
 
-        for _ in range(dice_quant):
-            total += randint(1, dice_sides)
+            if block.find('-') != -1:
+                block = block.replace('-', '')
+                flag = False
 
-        await update.message.reply_text(f"Rolling a {dice_sides}-sided die {dice_quant} times... You got {total}!")
+            locate_d = block.find('d')
+            try: 
+                dice_sides = int(block[locate_d+1:])
+                dice_quant = int(block[:locate_d])
+            
+                if dice_sides > 100 or dice_sides <= 1:
+                    await update.message.reply_text("I'm not sure if i have this die. You can choose any-sided die, but the number should be more than 1 and less than 100!")
+                    return 
+                if dice_quant > 100:
+                    await update.message.reply_text("I dont have this many dice! Even if i did, i wouldn't give you that much. The max is 100!")
+                    return
+                if dice_quant < 1:
+                    await update.message.reply_text("Are you serious? How am i supposed to roll that? The minimum amount of dice is 1!")
+                    return
 
-    except:
-        await update.message.reply_text("No! Not like that! You're supposed to use digits ONLY! I thought humans were an intelligent specie.")
-        return
+                total = 0
 
+                for _ in range(dice_quant):
+                    total += randint(1, dice_sides)
+                
+                if flag == False:
+                    roll -= total
+                else:
+                    roll += total
+
+            except:
+                await update.message.reply_text("No! Not like that! You're supposed to use digits ONLY! I thought humans were an intelligent specie.")
+                return
+        else:
+            try:
+                print(roll_list[i])
+                modif = int(roll_list[i])
+                roll += modif
+            except Exception as error:
+                print(error)
+                await update.message.reply_text("Digits only, remember? Nothing else will do!")
+                return
     
+    await update.message.reply_text(f"Rolling the dice... You got {roll}!")
+
 
 def main():
     app = Application.builder().token(TOKEN).build()
