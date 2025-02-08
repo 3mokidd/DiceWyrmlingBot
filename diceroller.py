@@ -10,8 +10,8 @@ with open("token","r") as token_file:
 
 
 async def start(update: Update, context: CallbackContext) -> None:
-    await update.message.reply_text("Hello, human. Would you like to roll one of my dice? Type /roll XdX to roll the dice. Like this: /roll 2d6")
-    
+    await update.message.reply_text("Hello, human. Would you like to roll one of my dice? Type /roll XdX to roll the dice. Like this: /roll 2d6. You can also add modifiers to ypur rolls - just type /roll 3d8+4")
+
 
 async def roll_d20(update: Update, context: CallbackContext) -> None:
     d20_result = randint(1, 20)
